@@ -40,6 +40,17 @@ class TestWithAsyncTests(unittest.TestCase):
         await asyncio.sleep(0, loop=loop)
         assert self.a == "pears"
 
+@asyncnostic
+class TestWithMixAsyncTests(unittest.TestCase):
+    def setUp(self, loop):
+        self.loop = loop
+
+    async def test_async_loop(self, loop):
+        await asyncio.sleep(0, loop=loop)
+        assert loop == self.loop
+
+    async def test_loop(self, loop):
+        assert loop == self.loop
 
 @asyncnostic
 class TestWithAsyncSpecials(unittest.TestCase):
@@ -54,6 +65,9 @@ class TestWithAsyncSpecials(unittest.TestCase):
         async def add(self, a, b):
             await asyncio.sleep(0, loop=self.loop)
             return a + b
+
+        def sub(self, a, b):
+            return a - b
 
     async def setUp(self, loop):
         self.loop = loop
@@ -76,3 +90,6 @@ class TestWithAsyncSpecials(unittest.TestCase):
 
     async def tricky_supporting_test_method(self):
         return self.depends.loop
+
+    def test_simple_depends(self):
+        assert self.depends.sub(2, 1) == 1

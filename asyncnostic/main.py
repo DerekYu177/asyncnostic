@@ -20,7 +20,7 @@ def to_method_with_loop(corm, loop):
     return inner
 
 
-def is_coro_test(name, coro):
+def is_a_coro_test(name, coro):
     is_test = name.startswith("test")
     is_coro = inspect.iscoroutinefunction(coro)
     return is_coro and is_test
@@ -37,7 +37,7 @@ def asyncnostic(klass):
     coroutines = {
         name: coro
         for name, coro in klass_methods_and_coroutines.items()
-        if is_coro_test(name, coro)
+        if is_a_coro_test(name, coro)
     }
 
     for name, coro in coroutines.items():
@@ -49,13 +49,13 @@ def asyncnostic(klass):
         setattr(klass, name, method)
 
     # copy over the setup and teardown
-    methods = {
+    special_methods = {
         name: method
         for name, method in klass_methods_and_coroutines.items()
         if name in specials
     }
 
-    for name, method in methods.items():
+    for name, method in special_methods.items():
 
         # does not transform, since these are already methods
         # provides loop if necessary
