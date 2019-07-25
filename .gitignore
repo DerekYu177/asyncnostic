@@ -1,3 +1,6 @@
 __pycache__
 .nox
 pytest_cache
+build
+dist
+*.egg-info
