@@ -1,0 +1,4 @@
+[flake8]
+# import statement for consumer ease of use
+# but is technically unused
+exclude = __init__.py
