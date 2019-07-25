@@ -1,6 +1,6 @@
 import nox
 
-files = ["main.py", "test_main.py", "noxfile.py"]
+files = ["asyncnostic", "tests", "noxfile.py"]
 
 
 @nox.session(python=["3.7"])

@@ -40,6 +40,7 @@ class TestWithAsyncTests(unittest.TestCase):
         await asyncio.sleep(0, loop=loop)
         assert self.a == "pears"
 
+
 @asyncnostic
 class TestWithMixAsyncTests(unittest.TestCase):
     def setUp(self, loop):
@@ -51,6 +52,7 @@ class TestWithMixAsyncTests(unittest.TestCase):
 
     async def test_loop(self, loop):
         assert loop == self.loop
+
 
 @asyncnostic
 class TestWithAsyncSpecials(unittest.TestCase):
