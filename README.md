@@ -7,6 +7,8 @@ import unittest
 import asyncio
 from asyncnostic import asyncnostic
 
+# if your test class has no async components to it at all
+# asyncnostic will stay out of your way
 @asyncnostic
 class TestAThing(unittest.TestCase):
 
@@ -15,7 +17,6 @@ class TestAThing(unittest.TestCase):
   # The event loop will be the same for all tests
   # we keep the same setUp and tearDown naming conventions from unittest
   async def setUp(self, loop):
-    # await statements can go here too!
     self.device = Device()
     await self.device.start(loop)
 
@@ -34,3 +35,6 @@ class TestAThing(unittest.TestCase):
 
 ### How it works under the hood
 We find all coroutines that start with "test", as is convention. These tests are then transformed into regular methods, and the asynchronous test is overwritten by the regular test method with the same name. Tests that are not asynchronous are left unchanged. If any of the tests request a loop, the event loop (unique per class) will be passed as a keyword argument.
+
+### Contributing
+Feel free to open a PR or and issue if there's any problem with `Asyncnostic`! If you do open a PR, make sure to have run `nox` before review :)
