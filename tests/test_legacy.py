@@ -1,7 +1,7 @@
 import unittest
 import asyncio
 
-from asyncnostic import asyncnostic
+from asyncnostic import asyncnostic_legacy as asyncnostic
 
 
 @asyncnostic

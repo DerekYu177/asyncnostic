@@ -1,1 +1,1 @@
-from .main import asyncnostic
+from .legacy import asyncnostic_legacy
