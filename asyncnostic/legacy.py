@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+import warnings
 
 specials = ["setUp", "tearDown"]
 
@@ -10,6 +11,7 @@ def to_method_with_loop(corm, loop):
         # for now we only support inserting the loop directly into the method
         # for python >3.10, using the loop explicitly is considered bad
         # practice, so we will have to set the loop some other way
+        # this will be fixed in asyncnostic.v2
         _corm = corm(self, loop=loop) if "loop" in req_args else corm(self)
         return (
             loop.run_until_complete(_corm)
@@ -26,7 +28,31 @@ def is_a_coro_test(name, coro):
     return is_coro and is_test
 
 
-def asyncnostic(klass):
+def asyncnostic(klass, warning=True):
+    if warning:
+        warnings.warn(
+            """
+    The current usage of @asyncnostic will be deprecated in the next release.
+    To preserve this behaviour, change your current import from:
+
+    from asyncnostic import asyncnostic
+
+    @asyncnostic
+    class TestClass(unittest.TestCase):
+        pass
+
+    to the following:
+
+    import asyncnostic
+
+    @asyncnostic.v1
+    class TestClass(unittest.TestCase):
+        pass
+
+    """,
+            DeprecationWarning,
+        )
+
     loop = asyncio.new_event_loop()
     klass_methods_and_coroutines = klass.__dict__
 
@@ -63,3 +89,6 @@ def asyncnostic(klass):
         setattr(klass, name, method)
 
     return klass
+
+def v1(klass):
+    return asyncnostic(klass, warning=False)

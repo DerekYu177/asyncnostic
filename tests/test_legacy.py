@@ -1,11 +1,9 @@
 import unittest
 import asyncio
 
-from asyncnostic import asyncnostic_legacy as asyncnostic
+import asyncnostic
 
-
-@asyncnostic
-class TestWithoutAsyncUnchanged(unittest.TestCase):
+class WithoutAsyncUnchanged:
     def setUp(self):
         self.a = "apples"
 
@@ -19,8 +17,7 @@ class TestWithoutAsyncUnchanged(unittest.TestCase):
         assert self.a == "apples"
 
 
-@asyncnostic
-class TestWithAsyncTests(unittest.TestCase):
+class WithAsyncTests:
     def setUp(self):
         self.a = "pears"
 
@@ -41,8 +38,7 @@ class TestWithAsyncTests(unittest.TestCase):
         assert self.a == "pears"
 
 
-@asyncnostic
-class TestWithMixAsyncTests(unittest.TestCase):
+class WithMixAsyncTests:
     def setUp(self, loop):
         self.loop = loop
 
@@ -54,8 +50,7 @@ class TestWithMixAsyncTests(unittest.TestCase):
         assert loop == self.loop
 
 
-@asyncnostic
-class TestWithAsyncSpecials(unittest.TestCase):
+class WithAsyncSpecials:
     class DependsOnLoop:
         def __init__(self):
             self.depends = True
@@ -95,3 +90,59 @@ class TestWithAsyncSpecials(unittest.TestCase):
 
     def test_simple_depends(self):
         assert self.depends.sub(2, 1) == 1
+
+base_test_klasses = [
+    WithoutAsyncUnchanged,
+    WithAsyncTests,
+    WithMixAsyncTests,
+    WithAsyncSpecials,
+]
+
+decorated_test_klasses = []
+
+for klass in base_test_klasses:
+    # from the one class dynamically create 2 similar test classes
+    # and decorate them with asyncnostic.asyncnostic and asyncnostic.v1
+    # make sure the names change based on the name of the existing class
+
+    klass_name = klass.__name__
+    
+    # klass_tested_with_legacy_decorator = type(
+    #     f"Test{klass_name}Legacy",
+    #     (unittest.TestCase, ),
+    #     dict(klass.__dict__),
+    # )
+    #
+    # klass_tested_with_legacy_decorator = \
+    #     asyncnostic.asyncnostic(klass_tested_with_legacy_decorator)
+    #
+    # klass_tested_with_new_v1_decorator = type(
+    #     f"Test{klass_name}V1",
+    #     (unittest.TestCase, ),
+    #     dict(klass.__dict__),
+    # )
+    #
+    # klass_tested_with_new_v1_decorator = \
+    #     asyncnostic.v1(klass_tested_with_new_v1_decorator)
+    #
+    # locals().update({
+    #     klass_tested_with_legacy_decorator.__name__: klass_tested_with_legacy_decorator,
+    #     klass_tested_with_new_v1_decorator.__name__: klass_tested_with_new_v1_decorator,
+    # })
+
+    locals().update({
+        f"Test{klass_name}Legacy": asyncnostic.asyncnostic(
+            type(
+                f"Test{klass_name}Legacy",
+                (unittest.TestCase, ),
+                dict(klass.__dict__),
+            )
+        ),
+        f"Test{klass_name}V1": asyncnostic.v1(
+            type(
+                f"Test{klass_name}V1",
+                (unittest.TestCase, ),
+                dict(klass.__dict__),
+            )
+        ),
+    })
