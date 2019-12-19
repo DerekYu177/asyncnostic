@@ -3,9 +3,15 @@ import inspect
 
 specials = ["setUp", "tearDown"]
 
-def to_method_with_loop_context(corm, loop):
-    def inner(self):
 
+def run_corm(self, corm, loop):
+    _corm = corm(self)
+    is_coroutine = inspect.iscoroutinefunction(corm)
+    return loop.run_until_complete(_corm) if is_coroutine else _corm
+
+
+def wrap_corms(corm, loop):
+    def inner(self):
 
         # currently, we're breaking causality:
         # we need the setUp to run before
@@ -14,38 +20,24 @@ def to_method_with_loop_context(corm, loop):
         # until this method is called, so
         # we'll have to do some additional schenanigans
 
-        _corm = corm(self)
-        return (
-            loop.run_until_complete(_corm)
-            if inspect.iscoroutinefunction(corm)
-            else _corm
-        )
+        return run_corm(self, corm, loop)
 
     return inner
 
 
-def wrap_specials_in_loop_context(name, corm, loop, previous_loop):
+def wrap_specials(name, corm, loop, previous_loop):
     def inner(self):
         if name == "setUp":
             # setup the loop
             asyncio.set_event_loop(loop)
-            _corm = corm(self)
-            return (
-                loop.run_until_complete(_corm)
-                if inspect.iscoroutinefunction(corm)
-                else _corm
-            )
+            return run_corm(self, corm, loop)
 
         if name == "tearDown":
             # switch out the new loop for the previous one
-            _corm = corm(self)
-            result = (
-                loop.run_until_complete(_corm)
-                if inspect.iscoroutinefunction(corm)
-                else _corm
-            )
+            result = run_corm(self, corm, loop)
             asyncio.set_event_loop(previous_loop)
             return result
+
     return inner
 
 
@@ -83,7 +75,7 @@ def asyncnostic(klass):
         # transform the coroutine into a method
         # provide the loop if necessary
         # the name cannot change because we want to override the earlier method
-        method = to_method_with_loop_context(coro, loop)
+        method = wrap_corms(coro, loop)
         setattr(klass, name, method)
 
     # copy over the setup and teardown
@@ -97,10 +89,11 @@ def asyncnostic(klass):
 
         # does not transform, since these are already methods
         # provides loop if necessary
-        method = wrap_specials_in_loop_context(name, method, loop, previous_loop)
+        method = wrap_specials(name, method, loop, previous_loop)
         setattr(klass, name, method)
 
     return klass
+
 
 def v2(klass):
     return asyncnostic(klass)

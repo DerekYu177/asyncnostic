@@ -3,6 +3,7 @@ import asyncio
 
 import asyncnostic
 
+
 class WithoutAsyncUnchanged:
     def setUp(self):
         self.a = "apples"
@@ -91,6 +92,7 @@ class WithAsyncSpecials:
     def test_simple_depends(self):
         assert self.depends.sub(2, 1) == 1
 
+
 base_test_klasses = [
     WithoutAsyncUnchanged,
     WithAsyncTests,
@@ -106,7 +108,7 @@ for klass in base_test_klasses:
     # make sure the names change based on the name of the existing class
 
     klass_name = klass.__name__
-    
+
     # klass_tested_with_legacy_decorator = type(
     #     f"Test{klass_name}Legacy",
     #     (unittest.TestCase, ),
@@ -126,23 +128,20 @@ for klass in base_test_klasses:
     #     asyncnostic.v1(klass_tested_with_new_v1_decorator)
     #
     # locals().update({
-    #     klass_tested_with_legacy_decorator.__name__: klass_tested_with_legacy_decorator,
-    #     klass_tested_with_new_v1_decorator.__name__: klass_tested_with_new_v1_decorator,
+    #     klass_tested_with_legacy_decorator.__name__: \
+    #        klass_tested_with_legacy_decorator,
+    #     klass_tested_with_new_v1_decorator.__name__: \
+    #        klass_tested_with_new_v1_decorator,
     # })
 
-    locals().update({
-        f"Test{klass_name}Legacy": asyncnostic.asyncnostic(
-            type(
-                f"Test{klass_name}Legacy",
-                (unittest.TestCase, ),
-                dict(klass.__dict__),
-            )
-        ),
-        f"Test{klass_name}V1": asyncnostic.v1(
-            type(
-                f"Test{klass_name}V1",
-                (unittest.TestCase, ),
-                dict(klass.__dict__),
-            )
-        ),
-    })
+    legacy_klass = f"Test{klass_name}Legacy"
+    legacy_test = asyncnostic.asyncnostic(
+        type(legacy_klass, (unittest.TestCase,), dict(klass.__dict__),)
+    )
+
+    v1_klass = f"Test{klass_name}V1"
+    v1_test = asyncnostic.v1(
+        type(v1_klass, (unittest.TestCase,), dict(klass.__dict__),)
+    )
+
+    locals().update({legacy_klass: legacy_test, v1_klass: v1_test})

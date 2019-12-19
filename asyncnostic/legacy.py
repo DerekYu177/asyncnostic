@@ -90,5 +90,6 @@ def asyncnostic(klass, warning=True):
 
     return klass
 
+
 def v1(klass):
     return asyncnostic(klass, warning=False)

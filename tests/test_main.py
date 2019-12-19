@@ -3,6 +3,7 @@ import asyncio
 
 import asyncnostic
 
+
 @asyncnostic.v2
 class TestWithoutAsyncUnchangedV2(unittest.TestCase):
     def setUp(self):
@@ -16,6 +17,7 @@ class TestWithoutAsyncUnchangedV2(unittest.TestCase):
 
     def test_with_self(self):
         assert self.a == "apples"
+
 
 @asyncnostic.v2
 class TestWithAsyncTestsV2(unittest.TestCase):
@@ -33,6 +35,7 @@ class TestWithAsyncTestsV2(unittest.TestCase):
 
     async def test_running_loop_is_same_as_setup(self):
         assert asyncio.get_running_loop() == self.loop
+
 
 @asyncnostic.v2
 class TestWithAsyncSpecialsV2(unittest.TestCase):
